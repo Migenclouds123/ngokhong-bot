@@ -29,8 +29,7 @@ export async function processTelegramMessage(
   messages: CoreMessage[],
   imageUrl?: string
 ) {
-  
-  const model = google('gemini-1.5-flash');
+  const model = google('gemini-1.5-flash-latest');
 
   try {
     const response = await generateText({
