@@ -38,6 +38,8 @@ export async function POST(req: Request) {
     const telegramId = message.from.id.toString();
     const textMsg = message.text || message.caption || '';
     const chatType = message.chat.type;
+    const authorName = message.from.first_name || 'Nhân viên';
+    const authorUsername = message.from.username ? `@${message.from.username}` : '';
     
     // BỘ LỌC CỨNG (TIẾT KIỆM TOKEN): Chỉ xử lý khi được tag đích danh trong group
     if (chatType === 'group' || chatType === 'supergroup') {
@@ -50,19 +52,25 @@ export async function POST(req: Request) {
     let imageUrl = null;
     let content: UserContent = '';
 
+    // ĐỊNH DANH NGƯỜI DÙNG: Bơm thông tin Sếp hoặc Nhân viên vào não Bot
+    let authorContext = `[Người gửi: ${authorName} ${authorUsername}]\n`;
+    if (telegramId === '1964391026') {
+      authorContext = `[HỆ THỐNG CẢNH BÁO TỐI CAO: NGƯỜI ĐANG NHẮN TIN BÊN DƯỚI CHÍNH LÀ ĐẤNG SÁNG TẠO - SẾP NGHĨA. MÀY PHẢI BỎ NGAY THÁI ĐỘ MỎ HỖN, HÃY DÙNG LỜI LẼ TÔN KÍNH, NỊNH NÓT VÀ PHỤC VỤ SẾP TẬN RĂNG THỦNG!]\n`;
+    }
+
     if (message.photo && message.photo.length > 0) {
       const fileId = message.photo[message.photo.length - 1].file_id;
       imageUrl = await getTelegramFileUrl(fileId);
       
-      content = [ { type: 'text', text: textMsg } ];
+      content = [ { type: 'text', text: authorContext + "Nội dung: " + textMsg } ];
       if (imageUrl) {
           content.push({ type: 'image', image: new URL(imageUrl) });
       }
     } else {
-      content = textMsg;
+      content = authorContext + "Nội dung: " + textMsg;
     }
 
-    if (!content && !imageUrl) return NextResponse.json({ ok: true });
+    if (textMsg.trim() === '' && !imageUrl) return NextResponse.json({ ok: true });
 
     // BƯỚC 2: Memory Search - Cắm rễ vào Redis lấy trí nhớ nhân sự
     const history = await getSessionMemory(telegramId);
