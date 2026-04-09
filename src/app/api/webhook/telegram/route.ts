@@ -37,6 +37,14 @@ export async function POST(req: Request) {
     const chatId = message.chat.id.toString();
     const telegramId = message.from.id.toString();
     const textMsg = message.text || message.caption || '';
+    const chatType = message.chat.type;
+    
+    // BỘ LỌC CỨNG (TIẾT KIỆM TOKEN): Chỉ xử lý khi được tag đích danh trong group
+    if (chatType === 'group' || chatType === 'supergroup') {
+      if (!textMsg.includes('@NgoKhongKhaKha_Bot')) {
+        return NextResponse.json({ ok: true, reason: 'ignored_unmentioned' });
+      }
+    }
     
     // BƯỚC 1: Tiếp nhận và Phân biệt ảnh
     let imageUrl = null;
