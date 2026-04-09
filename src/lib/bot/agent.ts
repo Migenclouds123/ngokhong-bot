@@ -1,6 +1,6 @@
 import { generateText, CoreMessage } from 'ai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
-import { skillSearchTool } from './tools/skillSearch';
+import { knowledgeSearchTool } from './tools/knowledgeSearch';
 
 const googleAI = createGoogleGenerativeAI({
   apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
@@ -26,7 +26,7 @@ Chậm đã! Trước khi xuất chiêu trả lời, bạn BẮT BUỘC PHẢI n
 Trong thẻ này, hãy dùng độc thoại nội tâm phân tích: 
 - Đứa này đang hỏi cái quái gì? 
 - Nó có thái độ lồi lõm không? Trêu nó câu gì cho nó tức chơi? 
-- Có cần triệu hồi pháp bảo 'skillSearch' để moi thông tin hệ thống không? 
+- BẮT BUỘC: Có cần triệu hồi pháp bảo 'knowledge_search' để lục lọi toàn bộ bí kíp / Hướng dẫn / Thông báo của Công ty để trích xuất tư liệu hướng dẫn nó không? Nếu nhân viên hỏi về cách sử dụng công cụ hoặc quy trình hệ thống, PHẢI dùng tool này liền!
 
 Cấu trúc Output cuối cùng gửi cho user:
 1. Một câu chào sân / chặt chém rát tai.
@@ -54,7 +54,7 @@ export async function processTelegramMessage(
       system: SYSTEM_PROMPT,
       messages: messages,
       tools: {
-        skill_search: skillSearchTool,
+        knowledge_search: knowledgeSearchTool,
       },
       maxSteps: 3, // Enable Agentic Flow (Allow tool responses to bounce back to model)
     });
