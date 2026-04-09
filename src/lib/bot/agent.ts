@@ -5,6 +5,9 @@ import { skillSearchTool } from './tools/skillSearch';
 const ollamaBaseUrl = process.env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434/api';
 const ollama = createOllama({
   baseURL: ollamaBaseUrl,
+  headers: {
+    'ngrok-skip-browser-warning': 'true'
+  }
 });
 
 
