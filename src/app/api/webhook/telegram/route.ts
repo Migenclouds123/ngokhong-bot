@@ -18,12 +18,18 @@ async function getTelegramFileUrl(fileId: string) {
   return null;
 }
 
-async function sendMessage(chatId: string, text: string) {
+async function sendMessage(chatId: string, text: string, threadId?: number) {
   if (!TELEGRAM_TOKEN) return;
+  
+  const payload: any = { chat_id: chatId, text, parse_mode: 'HTML' };
+  if (threadId) {
+    payload.message_thread_id = threadId;
+  }
+
   await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' }),
+    body: JSON.stringify(payload),
   });
 }
 
@@ -36,6 +42,7 @@ export async function POST(req: Request) {
     const message = body.message;
     const chatId = message.chat.id.toString();
     const telegramId = message.from.id.toString();
+    const threadId = message.message_thread_id; // <-- Lấy ID của Topic
     const textMsg = message.text || message.caption || '';
     const chatType = message.chat.type;
     const authorName = message.from.first_name || 'Nhân viên';
@@ -85,7 +92,7 @@ export async function POST(req: Request) {
     const { fullResponse, finalAnswer } = await processTelegramMessage(telegramId, messagesToProcess, imageUrl ?? undefined);
 
     // BƯỚC 5: Đóng gói tin nhắn và bắn ngầm qua Telegram API
-    await sendMessage(chatId, finalAnswer);
+    await sendMessage(chatId, finalAnswer, threadId);
 
     // Lưu đè lại Memory DB toàn bộ kết quả hội thoại
     const newAssistantMessage: CoreMessage = {
