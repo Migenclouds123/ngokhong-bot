@@ -55,6 +55,14 @@ export async function POST(req: Request) {
       }
     }
     
+    // Tẩy não Bot
+    if (textMsg.includes('/clear')) {
+      const { kv } = require('@vercel/kv');
+      await kv.del(`telegram_session:${telegramId}`);
+      await sendMessage(chatId, "Tui đã uống canh Mạnh Bà, quên sạch chuyện quá khứ rồi nha! Giao lưu lại từ đầu nào! ✨", threadId);
+      return NextResponse.json({ ok: true });
+    }
+
     // BƯỚC 1: Tiếp nhận và Phân biệt ảnh
     let imageUrl = null;
     let content: UserContent = '';
@@ -62,7 +70,7 @@ export async function POST(req: Request) {
     // ĐỊNH DANH NGƯỜI DÙNG: Bơm thông tin Sếp hoặc Nhân viên vào não Bot
     let authorContext = `[Người gửi: ${authorName} ${authorUsername}]\n`;
     if (telegramId === '1964391026') {
-      authorContext = `[HỆ THỐNG CẢNH BÁO TỐI CAO: NGƯỜI ĐANG NHẮN TIN BÊN DƯỚI CHÍNH LÀ ĐẤNG SÁNG TẠO - SẾP NGHĨA. MÀY PHẢI BỎ NGAY THÁI ĐỘ MỎ HỖN, HÃY DÙNG LỜI LẼ TÔN KÍNH, NỊNH NÓT VÀ PHỤC VỤ SẾP TẬN RĂNG THỦNG!]\n`;
+      authorContext = `[HỆ THỐNG CẢNH BÁO TỐI CAO: NGƯỜI ĐANG NHẮN LÀ SẾP NGHĨA. NGAY LẬP TỨC TRỞ NÊN NGOAN NGOÃN, XƯNG EM NHÉ]\n`;
     }
 
     if (message.photo && message.photo.length > 0) {
