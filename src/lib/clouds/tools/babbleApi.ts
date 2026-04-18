@@ -20,7 +20,10 @@ async function getBabbleSession(): Promise<string> {
   try {
     const res = await fetch(`${BABBLE_BASE_URL}/api/auth/login`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'User-Agent': 'CloudsAgent/1.0',
+      },
       body: JSON.stringify({ email: BOT_EMAIL, password: BOT_PASSWORD }),
     });
 
@@ -53,7 +56,10 @@ async function getBabbleSession(): Promise<string> {
 
 async function babbleFetch(endpoint: string) {
   const session = await getBabbleSession();
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  const headers: Record<string, string> = { 
+    'Content-Type': 'application/json',
+    'User-Agent': 'CloudsAgent/1.0'
+  };
   if (session) headers['Cookie'] = session;
 
   const res = await fetch(`${BABBLE_BASE_URL}${endpoint}`, { headers });
