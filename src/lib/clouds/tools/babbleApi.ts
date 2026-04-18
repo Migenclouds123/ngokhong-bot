@@ -95,12 +95,7 @@ export const babbleApiTool = tool({
   execute: async ({ action, context }) => {
     try {
       const session = await getBabbleSession();
-      if (!session) {
-        return (
-          '⚠️ Clouds Agent chưa được cấu hình kết nối Babble System. ' +
-          'Sếp Nghĩa cần thêm BABBLE_BOT_EMAIL và BABBLE_BOT_PASSWORD vào .env để tui lấy data sống được nhé!'
-        );
-      }
+      // Bỏ qua check vì getBabbleSession đã throw lỗi nếu fail.
 
       let data: unknown;
       let summary = '';
