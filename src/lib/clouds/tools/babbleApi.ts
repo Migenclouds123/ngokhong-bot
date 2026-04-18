@@ -30,12 +30,12 @@ async function getBabbleSession(): Promise<string | null> {
     // Lấy session cookie từ Set-Cookie header
     const setCookie = res.headers.get('set-cookie');
     if (setCookie) {
-      const sessionMatch = setCookie.match(/session=[^;]+/);
+      const sessionMatch = setCookie.match(/babble_token=[^;]+/);
       if (sessionMatch) {
-        const token = sessionMatch[0]; // "session=xxx"
+        const token = sessionMatch[0]; // "babble_token=xxx"
         cachedSession = {
           token,
-          expiresAt: Date.now() + 23 * 60 * 60 * 1000, // 23 giờ cache
+          expiresAt: Date.now() + 8 * 60 * 60 * 1000, // 8 giờ (theo maxAge của server)
         };
         return token;
       }
