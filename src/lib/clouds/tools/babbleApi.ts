@@ -8,14 +8,13 @@ const BOT_PASSWORD = process.env.BABBLE_BOT_PASSWORD || 'Nghiatranht99@';
 // Cache session token in memory (reset mỗi lần cold start — OK cho serverless)
 let cachedSession: { token: string; expiresAt: number } | null = null;
 
-async function getBabbleSession(): Promise<string | null> {
-  // Kiểm tra cache còn hạn không (30 phút buffer)
+async function getBabbleSession(): Promise<string> {
   if (cachedSession && Date.now() < cachedSession.expiresAt) {
     return cachedSession.token;
   }
 
   if (!BOT_EMAIL || !BOT_PASSWORD) {
-    return null; // Chưa cấu hình bot account
+    throw new Error('Thiếu email/password cấu hình!');
   }
 
   try {
@@ -25,26 +24,32 @@ async function getBabbleSession(): Promise<string | null> {
       body: JSON.stringify({ email: BOT_EMAIL, password: BOT_PASSWORD }),
     });
 
-    if (!res.ok) return null;
-
-    // Lấy session cookie từ Set-Cookie header
-    const setCookie = res.headers.get('set-cookie');
-    if (setCookie) {
-      const sessionMatch = setCookie.match(/babble_token=[^;]+/);
-      if (sessionMatch) {
-        const token = sessionMatch[0]; // "babble_token=xxx"
-        cachedSession = {
-          token,
-          expiresAt: Date.now() + 8 * 60 * 60 * 1000, // 8 giờ (theo maxAge của server)
-        };
-        return token;
-      }
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`Login fail: ${res.status} ${res.statusText} - ${errorText}`);
     }
-    return null;
-  } catch {
-    return null;
+
+    const setCookie = res.headers.get('set-cookie');
+    if (!setCookie) {
+      throw new Error('Login thành công nhưng không có set-cookie trong header (có thể do Vercel giấu header).');
+    }
+
+    const sessionMatch = setCookie.match(/babble_token=[^;]+/);
+    if (!sessionMatch) {
+      throw new Error(`Có set-cookie nhưng không tìm thấy babble_token. Set-Cookie: ${setCookie}`);
+    }
+
+    const token = sessionMatch[0];
+    cachedSession = {
+      token,
+      expiresAt: Date.now() + 8 * 60 * 60 * 1000,
+    };
+    return token;
+  } catch (err: any) {
+    throw new Error(`Lỗi getBabbleSession: ${err.message}`);
   }
 }
+
 
 async function babbleFetch(endpoint: string) {
   const session = await getBabbleSession();
