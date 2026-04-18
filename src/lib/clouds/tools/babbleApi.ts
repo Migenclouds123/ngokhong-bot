@@ -66,7 +66,7 @@ export const babbleApiTool = tool({
     'Gọi trực tiếp API Babble Clouds System để lấy dữ liệu sống (real-time). ' +
     'Dùng khi nhân viên hỏi các câu như: "Task nào đang quá hạn?", "Nhóm mình có mấy task?", ' +
     '"Khách hàng nào là Hạng A?". Cung cấp thông tin thực tế từ database, không phải dự đoán. ' +
-    'LƯU Ý: Cần BABBLE_BOT_EMAIL và BABBLE_BOT_PASSWORD trong .env để hoạt động.',
+    'LƯU Ý QUAN TRỌNG: Nếu tool này trả lời có lỗi (Ví dụ: ❌ Không kết nối được), bạn BẮT BUỘC phải in NGUYÊN VĂN mã lỗi kỹ thuật đó cho người dùng xem.',
   parameters: z.object({
     action: z.enum([
       'get_tasks_summary',
