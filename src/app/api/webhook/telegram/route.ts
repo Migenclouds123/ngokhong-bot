@@ -18,12 +18,18 @@ async function getTelegramFileUrl(fileId: string) {
   return null;
 }
 
-async function sendMessage(chatId: string, text: string) {
+async function sendMessage(chatId: string, text: string, threadId?: number) {
   if (!TELEGRAM_TOKEN) return;
+  
+  const payload: any = { chat_id: chatId, text, parse_mode: 'HTML' };
+  if (threadId) {
+    payload.message_thread_id = threadId;
+  }
+
   await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: chatId, text }),
+    body: JSON.stringify(payload),
   });
 }
 
@@ -36,6 +42,7 @@ export async function POST(req: Request) {
     const message = body.message;
     const chatId = message.chat.id.toString();
     const telegramId = message.from.id.toString();
+    const threadId = message.message_thread_id; // <-- Lấy ID của Topic
     const textMsg = message.text || message.caption || '';
     const chatType = message.chat.type;
     const authorName = message.from.first_name || 'Nhân viên';
@@ -48,6 +55,14 @@ export async function POST(req: Request) {
       }
     }
     
+    // Tẩy não Bot
+    if (textMsg.includes('/clear')) {
+      const { kv } = require('@vercel/kv');
+      await kv.del(`telegram_session:${telegramId}`);
+      await sendMessage(chatId, "Tui đã uống canh Mạnh Bà, quên sạch chuyện quá khứ rồi nha! Giao lưu lại từ đầu nào! ✨", threadId);
+      return NextResponse.json({ ok: true });
+    }
+
     // BƯỚC 1: Tiếp nhận và Phân biệt ảnh
     let imageUrl = null;
     let content: UserContent = '';
@@ -55,7 +70,7 @@ export async function POST(req: Request) {
     // ĐỊNH DANH NGƯỜI DÙNG: Bơm thông tin Sếp hoặc Nhân viên vào não Bot
     let authorContext = `[Người gửi: ${authorName} ${authorUsername}]\n`;
     if (telegramId === '1964391026') {
-      authorContext = `[HỆ THỐNG CẢNH BÁO TỐI CAO: NGƯỜI ĐANG NHẮN TIN BÊN DƯỚI CHÍNH LÀ ĐẤNG SÁNG TẠO - SẾP NGHĨA. MÀY PHẢI BỎ NGAY THÁI ĐỘ MỎ HỖN, HÃY DÙNG LỜI LẼ TÔN KÍNH, NỊNH NÓT VÀ PHỤC VỤ SẾP TẬN RĂNG THỦNG!]\n`;
+      authorContext = `[HỆ THỐNG CẢNH BÁO TỐI CAO: NGƯỜI ĐANG NHẮN LÀ SẾP NGHĨA. NGAY LẬP TỨC TRỞ NÊN NGOAN NGOÃN, XƯNG EM NHÉ]\n`;
     }
 
     if (message.photo && message.photo.length > 0) {
@@ -85,7 +100,7 @@ export async function POST(req: Request) {
     const { fullResponse, finalAnswer } = await processTelegramMessage(telegramId, messagesToProcess, imageUrl ?? undefined);
 
     // BƯỚC 5: Đóng gói tin nhắn và bắn ngầm qua Telegram API
-    await sendMessage(chatId, finalAnswer);
+    await sendMessage(chatId, finalAnswer, threadId);
 
     // Lưu đè lại Memory DB toàn bộ kết quả hội thoại
     const newAssistantMessage: CoreMessage = {
