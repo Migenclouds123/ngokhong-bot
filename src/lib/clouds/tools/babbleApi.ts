@@ -2,8 +2,8 @@ import { tool } from 'ai';
 import { z } from 'zod';
 
 const BABBLE_BASE_URL = process.env.BABBLE_API_URL || 'https://babble-app-5tcf.vercel.app';
-const BOT_EMAIL = process.env.BABBLE_BOT_EMAIL || '';
-const BOT_PASSWORD = process.env.BABBLE_BOT_PASSWORD || '';
+const BOT_EMAIL = process.env.BABBLE_BOT_EMAIL || 'bot@babbleclouds.com';
+const BOT_PASSWORD = process.env.BABBLE_BOT_PASSWORD || 'Nghiatranht99@';
 
 // Cache session token in memory (reset mỗi lần cold start — OK cho serverless)
 let cachedSession: { token: string; expiresAt: number } | null = null;
